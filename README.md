@@ -54,17 +54,21 @@ This repository gives you a **ready-to-run Selenium Grid in Docker** so you can:
 
 ## Architecture
 
-```
-                      ┌──────────────────────┐
-   Your test code ───►│  Selenium Hub :4444  │◄─── WebDriver API
-                      └──────────┬───────────┘
-                                 │ (overlay network)
-              ┌──────────────────┼──────────────────┐
-              ▼                  ▼                  ▼
-       ┌───────────┐      ┌────────────┐     ┌──────────────┐
-       │  Chrome   │      │  Firefox   │     │  PhantomJS   │
-       │   Node    │      │    Node    │     │    Node      │
-       └───────────┘      └────────────┘     └──────────────┘
+```mermaid
+flowchart TB
+    Client["Your test code<br/>(WebDriver client)"]
+    Hub["Selenium Hub<br/>:4444"]
+
+    subgraph Nodes["Browser Nodes (private overlay network)"]
+        Chrome["selenium/node-chrome<br/>:5557 &rarr; :5556"]
+        Firefox["selenium/node-firefox<br/>:5557 &rarr; :5556"]
+        Phantom["selenium/node-phantomjs<br/>:5556 &rarr; :5556"]
+    end
+
+    Client -- "WebDriver API<br/>/wd/hub" --> Hub
+    Hub --> Chrome
+    Hub --> Firefox
+    Hub --> Phantom
 ```
 
 - **Hub** — exposes port `4444`, routes WebDriver requests to available nodes.
